@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Formulario de Múltiples Páginas X Jeremy Peña</title>
+  <style>
+    /* Estilos generales */
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background-color: #f5f5f5;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #333;
+    }
+
+    .page {
+      display: none;
+      background: #ffffff;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 500px;
+      padding: 20px;
+      margin-top: 20px;
+    }
+
+    .page h2 {
+      color: #555;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 10px;
+      color: #444;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    input[type="date"] {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+
+    ul {
+      list-style-type: none;
+      padding: 0;
+    }
+
+    /* Botones */
+    button {
+      background-color: #4CAF50;
+      color: white;
+      padding: 10px 20px;
+      margin: 5px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    /* Estilo de la barra de progreso */
+    .progress-bar {
+      width: 100%;
+      background-color: #ddd;
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 15px;
+      max-width: 500px;
+    }
+
+    .progress {
+      height: 8px;
+      background-color: #4CAF50;
+      width: 0;
+      transition: width 0.3s ease;
+    }
+
+    /* Estilo de la lista de registros */
+    ul li {
+      background: #f9f9f9;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      margin-bottom: 5px;
+      font-size: 14px;
+      color: #333;
+    }
+
+    /* Estilo del cuadro de presentación de datos */
+    #output {
+      background-color: #f9f9f9;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 15px;
+      color: #333;
+      font-size: 14px;
+      line-height: 1.6;
+      overflow: auto;
+      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Formulario de Múltiples Páginas X Jeremy Peña</h1>
+
+  <!-- Barra de progreso -->
+  <div class="progress-bar">
+    <div id="progress" class="progress"></div>
+  </div>
+
+  <!-- Página 1: Datos Personales -->
+  <div id="page1" class="page">
+    <h2>Datos Personales</h2>
+    <label>Nombre: <input type="text" id="nombre" /></label>
+    <label>Apellido: <input type="text" id="apellido" /></label>
+    <label>Edad: <input type="text" id="Edad" /></label>
+    <button onclick="nextPage(2)">Siguiente</button>
+  </div>
+
+  <!-- Página 2: Familiares -->
+  <div id="page2" class="page">
+    <h2>Familiares</h2>
+    <label>Nombre: <input type="text" id="fam_nombre" /></label>
+    <label>Parentesco: <input type="text" id="fam_parentesco" /></label>
+    <label>Edad: <input type="number" id="fam_edad" /></label>
+    <button onclick="addFamiliar()">Agregar Familiar</button>
+    <ul id="familiaresList"></ul>
+    <button onclick="previousPage(1)">Anterior</button>
+    <button onclick="nextPage(3)">Siguiente</button>
+  </div>
+
+  <!-- Página 3: Condiciones Pre-Existentes -->
+  <div id="page3" class="page">
+    <h2>Condiciones Pre-Existentes de Salud</h2>
+    <label>Enfermedad: <input type="text" id="enfermedad" /></label>
+    <label>Tiempo (años): <input type="number" id="tiempo" /></label>
+    <button onclick="addCondicion()">Agregar Condición</button>
+    <ul id="condicionesList"></ul>
+    <button onclick="previousPage(2)">Anterior</button>
+    <button onclick="nextPage(4)">Siguiente</button>
+  </div>
+
+  <!-- Página 4: Internamientos -->
+  <div id="page4" class="page">
+    <h2>Internamientos Realizados</h2>
+    <label>Fecha: <input type="date" id="int_fecha" /></label>
+    <label>Centro Médico: <input type="text" id="int_centro" /></label>
+    <label>Diagnóstico: <input type="text" id="int_diagnostico" /></label>
+    <button onclick="addInternamiento()">Agregar Internamiento</button>
+    <ul id="internamientosList"></ul>
+    <button onclick="previousPage(3)">Anterior</button>
+    <button onclick="nextPage(5)">Siguiente</button>
+  </div>
+
+  <!-- Página 5: Presentación de Datos -->
+  <div id="page5" class="page">
+    <h2>Datos Registrados</h2>
+    <div id="output"></div>
+    <button onclick="previousPage(4)">Anterior</button>
+  </div>
+
+  <script>
+    // Estructura JSON para almacenar datos
+    const formData = {
+      personal: {},
+      familiares: [],
+      condiciones: [],
+      internamientos: []
+    };
+
+    // Navegación entre páginas y actualización de la barra de progreso
+    function nextPage(page) {
+      document.querySelectorAll('.page').forEach(div => div.style.display = 'none');
+      document.getElementById('page' + page).style.display = 'block';
+      
+      // Actualizar la barra de progreso
+      const progress = document.getElementById('progress');
+      progress.style.width = ((page - 1) * 25) + '%';
+
+      if (page === 5) {
+        document.getElementById('output').textContent = JSON.stringify(formData, null, 2);
+      }
+    }
+
+    function previousPage(page) {
+      nextPage(page);
+    }
+
+    // Funciones para agregar datos a cada sección
+    function addFamiliar() {
+      const familiar = {
+        nombre: document.getElementById('fam_nombre').value,
+        parentesco: document.getElementById('fam_parentesco').value,
+        edad: document.getElementById('fam_edad').value
+      };
+      formData.familiares.push(familiar);
+      updateList('familiaresList', formData.familiares);
+    }
+
+    function addCondicion() {
+      const condicion = {
+        enfermedad: document.getElementById('enfermedad').value,
+        tiempo: document.getElementById('tiempo').value
+      };
+      formData.condiciones.push(condicion);
+      updateList('condicionesList', formData.condiciones);
+    }
+
+    function addInternamiento() {
+      const internamiento = {
+        fecha: document.getElementById('int_fecha').value,
+        centro: document.getElementById('int_centro').value,
+        diagnostico: document.getElementById('int_diagnostico').value
+      };
+      formData.internamientos.push(internamiento);
+      updateList('internamientosList', formData.internamientos);
+    }
+
+    function updateList(elementId, list) {
+      const ul = document.getElementById(elementId);
+      ul.innerHTML = '';
+      list.forEach(item => {
+        const li = document.createElement('li');
+        li.textContent = JSON.stringify(item);
+        ul.appendChild(li);
+      });
+    }
+
+    // Mostrar la primera página al cargar
+    nextPage(1);
+  </script>
+
+</body>
+</html>
